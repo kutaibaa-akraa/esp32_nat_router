@@ -1,220 +1,214 @@
-# ESP32 NAT Router with WPA2 Enterprise support
+# موجه NAT باستخدام ESP32 مع دعم WPA2 Enterprise
 
-This is a firmware to use the ESP32 as WiFi NAT router. It can be used as
-- Simple range extender for an existing WiFi network
-- Setting up an additional WiFi network with different SSID/password for guests or IOT devices
-- Convert a corporate (WPA2-Enterprise) network to a regular network, for simple devices.
+هذا البرنامج الثابت لاستخدام ESP32 كموجه NAT لشبكة WiFi. يمكن استخدامه كـ:
+- ممدد نطاق بسيط لشبكة WiFi موجودة.
+- إعداد شبكة WiFi إضافية بمعرف SSID/كلمة مرور مختلفة للضيوف أو أجهزة IoT.
+- تحويل شبكة مؤسسية (WPA2-Enterprise) إلى شبكة عادية، للأجهزة البسيطة.
 
+يمكنه تحقيق عرض نطاق يزيد عن 15 ميجابت/ثانية.
 
-It can achieve a bandwidth of more than 15mbps.
+يعتمد الكود على [مكون الكونسول](https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/console.html#console) و[مثال esp-idf-nat-example](https://github.com/jonask1337/esp-idf-nat-example).
 
-The code is based on the [Console Component](https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/console.html#console) and the [esp-idf-nat-example](https://github.com/jonask1337/esp-idf-nat-example). 
+## الأداء
 
-## Performance
+تم استخدام `IPv4` وبروتوكول `TCP` في جميع الاختبارات.
 
-All tests used `IPv4` and the `TCP` protocol.
-
-| Board | Tools | Optimization | CPU Frequency | Throughput | Power |
+| اللوحة | الأدوات | التحسين | تردد المعالج | الإنتاجية | الطاقة |
 | ----- | ----- | ------------ | ------------- | ---------- | ----- |
-| `ESP32D0WDQ6` | `iperf3` | `0g` | `240MHz` | `16.0 MBits/s` | `1.6 W` |
-| `ESP32D0WDQ6` | `iperf3` | `0s` | `240MHz` | `10.0 MBits/s` | `1.8 W` | 
-| `ESP32D0WDQ6` | `iperf3` | `0g` | `160MHz` | `15.2 MBits/s` | `1.4 W` |
-| `ESP32D0WDQ6` | `iperf3` | `0s` | `160MHz` | `14.1 MBits/s` | `1.5 W` |
+| `ESP32D0WDQ6` | `iperf3` | `0g` | `240MHz` | `16.0 ميجابت/ثانية` | `1.6 واط` |
+| `ESP32D0WDQ6` | `iperf3` | `0s` | `240MHz` | `10.0 ميجابت/ثانية` | `1.8 واط` | 
+| `ESP32D0WDQ6` | `iperf3` | `0g` | `160MHz` | `15.2 ميجابت/ثانية` | `1.4 واط` |
+| `ESP32D0WDQ6` | `iperf3` | `0s` | `160MHz` | `14.1 ميجابت/ثانية` | `1.5 واط` |
 
-## First Boot
-After first boot the ESP32 NAT Router will offer a WiFi network with an open AP and the ssid "ESP32_NAT_Router". Configuration can either be done via a simple web interface or via the serial console. 
+## الإقلاع الأول
+بعد الإقلاع الأول، سيقدم ESP32 NAT Router شبكة WiFi مع نقطة وصول مفتوحة ومعرف SSID "ESP32_NAT_Router". يمكن إجراء التكوين إما عبر واجهة ويب بسيطة أو عبر الكونسول التسلسلي.
 
-## Web Config Interface
-The web interface allows for the configuration of all parameters. Connect you PC or smartphone to the WiFi SSID "ESP32_NAT_Router" and point your browser to "http://192.168.4.1". This page should appear:
+## واجهة تكوين الويب
+تسمح واجهة الويب بتكوين جميع المعلمات. قم بتوصيل جهاز الكمبيوتر أو الهاتف الذكي بشبكة WiFi SSID "ESP32_NAT_Router" وتوجه إلى "http://192.168.4.1". يجب أن تظهر هذه الصفحة:
 
 <img src="https://raw.githubusercontent.com/marci07iq/esp32_nat_router/master/ESP32_NAT_UI3.png">
 
-First enter the appropriate values for the uplink WiFi network, the "STA Settings". Leave password blank for open networks. Click "Connect". The ESP32 reboots and will connect to your WiFi router.
+أولاً، أدخل القيم المناسبة لشبكة WiFi uplink، "إعدادات STA". اترك كلمة المرور فارغة للشبكات المفتوحة. انقر على "اتصال". سيعيد ESP32 التشغيل وسيتصل بموجه WiFi الخاص بك.
 
-Now you can reconnect and reload the page and change the "Soft AP Settings". Click "Set" and again the ESP32 reboots. Now it is ready for forwarding traffic over the newly configured Soft AP. Be aware that these changes also affect the config interface, i.e. to do further configuration, connect to the ESP32 through one of the newly configured WiFi networks.
+الآن يمكنك إعادة الاتصال وإعادة تحميل الصفحة وتغيير "إعدادات Soft AP". انقر على "تعيين" وسيعيد ESP32 التشغيل مرة أخرى. الآن أصبح جاهزًا لتوجيه حركة المرور عبر Soft AP الجديد. كن على علم بأن هذه التغييرات تؤثر أيضًا على واجهة التكوين، أي لإجراء المزيد من التكوين، قم بالاتصال بـ ESP32 عبر إحدى شبكات WiFi الجديدة التي تم تكوينها.
 
-If you want to enter a '+' in the web interface you have to use HTTP-style hex encoding like "Mine%2bYours". This will result in a string "Mine+Yours". With this hex encoding you can enter any byte value you like, except for 0 (for C-internal reasons).
+إذا كنت تريد إدخال '+' في واجهة الويب، يجب عليك استخدام ترميز HTTP السداسي مثل "Mine%2bYours". سيؤدي هذا إلى إنشاء سلسلة "Mine+Yours". باستخدام هذا الترميز السداسي، يمكنك إدخال أي قيمة بايت تريدها، باستثناء 0 (لأسباب داخلية في لغة C).
 
-It you want to disable the web interface (e.g. for security reasons), go to the CLI and enter:
+إذا كنت تريد تعطيل واجهة الويب (على سبيل المثال، لأسباب أمنية)، انتقل إلى CLI وأدخل:
 ```
 nvs_namespace esp32_nat
 nvs_set lock str -v 1
 ```
-After restart, no webserver is started any more. You can only re-enable it with:
+بعد إعادة التشغيل، لن يتم بدء خادم الويب بعد الآن. يمكنك فقط إعادة تمكينه باستخدام:
 ```
 nvs_namespace esp32_nat
 nvs_set lock str -v 0
 ```
-If you made a mistake and have lost all contact with the ESP you can still use the serial console to reconfigure it. All parameter settings are stored in NVS (non volatile storage), which is *not* erased by simple re-flashing the binaries. If you want to wipe it out, use "esptool.py -p /dev/ttyUSB0 erase_flash".
+إذا قمت بخطأ وفقدت كل الاتصال بـ ESP، يمكنك استخدام الكونسول التسلسلي لإعادة تكوينه. يتم تخزين جميع إعدادات المعلمات في NVS (التخزين غير المتطاير)، والذي *لا* يتم مسحه بإعادة تثبيت الثنائيات البسيطة. إذا كنت تريد مسحه، استخدم "esptool.py -p /dev/ttyUSB0 erase_flash".
 
-## Access devices behind the router
+## الوصول إلى الأجهزة خلف الموجه
 
-If you want to access a device behind the esp32 NAT router? `PC -> local router -> esp32NAT -> server`
+إذا كنت تريد الوصول إلى جهاز خلف موجه NAT ESP32؟ `PC -> الموجه المحلي -> esp32NAT -> الخادم`
 
-Lets say "server" is exposing a webserver on port 80 and you want to access that from your PC.  
-For that you need to configure a portmap (e.g. by connecting via the arduino IDE uart monitor through USB)
+لنفترض أن "الخادم" يعرض خادم ويب على المنفذ 80 وتريد الوصول إليه من جهاز الكمبيوتر الخاص بك.  
+لذلك، تحتاج إلى تكوين portmap (على سبيل المثال، عن طريق الاتصال عبر شاشة UART لـ Arduino IDE عبر USB)
 
 ```
 portmap add TCP 8080 192.168.4.2 80
-                                 ↑ port of the webserver
-                            ↑ server's ip in esp32NAT network
-                  ↑ exposed port in the local router's network
+                                 ↑ منفذ خادم الويب
+                            ↑ عنوان IP للخادم في شبكة esp32NAT
+                  ↑ المنفذ المعروض في شبكة الموجه المحلي
 ```
      
-Assuming the esp32NAT's ip address in your `local router` is `192.168.0.57` you can acces the server by typing `192.168.0.57:8080` into your browser now.
+بافتراض أن عنوان IP لـ esp32NAT في `الموجه المحلي` الخاص بك هو `192.168.0.57`، يمكنك الآن الوصول إلى الخادم عن طريق كتابة `192.168.0.57:8080` في المتصفح.
 
-## Interpreting the on board LED
+## تفسير LED المدمج
 
-If the ESP32 is connected to the upstream AP then the on board LED should be on, otherwise off.
-If there are devices connected to the ESP32 then the on board LED will keep blinking as many times as the number of devices connected.
+إذا كان ESP32 متصلاً بـ AP uplink، فيجب أن يكون LED المدمج مضاءً، وإلا فهو مطفأ.
+إذا كانت هناك أجهزة متصلة بـ ESP32، فسيومض LED المدمج عدة مرات مثل عدد الأجهزة المتصلة.
 
-For example:
+على سبيل المثال:
 
-One device connected to the ESP32, and the ESP32 is connected to upstream: 
+جهاز واحد متصل بـ ESP32، و ESP32 متصل بـ uplink: 
 
 `*****.*****`
 
-Two devices are connected to the ESP32, but the ESP32 is not connected to upstream: 
+جهازان متصلان بـ ESP32، ولكن ESP32 غير متصل بـ uplink: 
 
 `....*.*....`
 
-# Command Line Interface
+# واجهة سطر الأوامر
 
-For configuration you have to use a serial console (Putty or GtkTerm with 115200 bps).
-Use the "set_sta" and the "set_ap" command to configure the WiFi settings. Changes are stored persistently in NVS and are applied after next restart. Use "show" to display the current config. The NVS namespace for the parameters is "esp32_nat"
+للتكوين، يجب استخدام كونسول تسلسلي (Putty أو GtkTerm بسرعة 115200 باود).
+استخدم الأمر "set_sta" والأمر "set_ap" لتكوين إعدادات WiFi. يتم تخزين التغييرات بشكل دائم في NVS ويتم تطبيقها بعد إعادة التشغيل التالية. استخدم "show" لعرض التكوين الحالي. مساحة الاسم NVS للمعلمات هي "esp32_nat".
 
-Enter the `help` command get a full list of all available commands:
+أدخل الأمر `help` للحصول على قائمة كاملة بجميع الأوامر المتاحة:
 ```
 help 
-  Print the list of registered commands
+  طباعة قائمة الأوامر المسجلة
 
 free 
-  Get the current size of free heap memory
+  الحصول على الحجم الحالي للذاكرة الحرة
 
 heap 
-  Get minimum size of free heap memory that was available during program execu
-  tion
+  الحصول على الحد الأدنى لحجم الذاكرة الحرة المتاحة أثناء تنفيذ البرنامج
 
 version 
-  Get version of chip and SDK
+  الحصول على إصدار الشريحة و SDK
 
 restart 
-  Software reset of the chip
+  إعادة تشغيل البرنامج للشريحة
 
 deep_sleep  [-t <t>] [--io=<n>] [--io_level=<0|1>]
-  Enter deep sleep mode. Two wakeup modes are supported: timer and GPIO. If no
-  wakeup option is specified, will sleep indefinitely.
-  -t, --time=<t>  Wake up time, ms
-      --io=<n>  If specified, wakeup using GPIO with given number
-  --io_level=<0|1>  GPIO level to trigger wakeup
+  الدخول في وضع السكون العميق. يتم دعم وضعين للاستيقاظ: المؤقت و GPIO. إذا لم يتم تحديد خيار استيقاظ، سينام إلى أجل غير مسمى.
+  -t, --time=<t>  وقت الاستيقاظ، بالمللي ثانية
+      --io=<n>  إذا تم تحديده، الاستيقاظ باستخدام GPIO بالرقم المحدد
+  --io_level=<0|1>  مستوى GPIO لتحريك الاستيقاظ
 
 light_sleep  [-t <t>] [--io=<n>]... [--io_level=<0|1>]...
-  Enter light sleep mode. Two wakeup modes are supported: timer and GPIO. Mult
-  iple GPIO pins can be specified using pairs of 'io' and 'io_level' arguments
-  . Will also wake up on UART input.
-  -t, --time=<t>  Wake up time, ms
-      --io=<n>  If specified, wakeup using GPIO with given number
-  --io_level=<0|1>  GPIO level to trigger wakeup
+  الدخول في وضع السكون الخفيف. يتم دعم وضعين للاستيقاظ: المؤقت و GPIO. يمكن تحديد عدة دبابيس GPIO باستخدام أزواج من الوسائط 'io' و 'io_level'. سيتم أيضًا الاستيقاظ على إدخال UART.
+  -t, --time=<t>  وقت الاستيقاظ، بالمللي ثانية
+      --io=<n>  إذا تم تحديده، الاستيقاظ باستخدام GPIO بالرقم المحدد
+  --io_level=<0|1>  مستوى GPIO لتحريك الاستيقاظ
 
 tasks 
-  Get information about running tasks
+  الحصول على معلومات عن المهام قيد التشغيل
 
 nvs_set  <key> <type> -v <value>
-  Set key-value pair in selected namespace.
-Examples:
+  تعيين زوج مفتاح-قيمة في مساحة الاسم المحددة.
+أمثلة:
  nvs_set VarName i32 -v 
   123 
  nvs_set VarName str -v YourString 
  nvs_set VarName blob -v 0123456789abcdef 
-         <key>  key of the value to be set
-        <type>  type can be: i8, u8, i16, u16 i32, u32 i64, u64, str, blob
-  -v, --value=<value>  value to be stored
+         <key>  مفتاح القيمة المراد تعيينها
+        <type>  النوع يمكن أن يكون: i8, u8, i16, u16 i32, u32 i64, u64, str, blob
+  -v, --value=<value>  القيمة المراد تخزينها
 
 nvs_get  <key> <type>
-  Get key-value pair from selected namespace. 
-Example: nvs_get VarName i32
-         <key>  key of the value to be read
-        <type>  type can be: i8, u8, i16, u16 i32, u32 i64, u64, str, blob
+  الحصول على زوج مفتاح-قيمة من مساحة الاسم المحددة. 
+مثال: nvs_get VarName i32
+         <key>  مفتاح القيمة المراد قراءتها
+        <type>  النوع يمكن أن يكون: i8, u8, i16, u16 i32, u32 i64, u64, str, blob
 
 nvs_erase  <key>
-  Erase key-value pair from current namespace
-         <key>  key of the value to be erased
+  مسح زوج مفتاح-قيمة من مساحة الاسم الحالية
+         <key>  مفتاح القيمة المراد مسحها
 
 nvs_namespace  <namespace>
-  Set current namespace
-   <namespace>  namespace of the partition to be selected
+  تعيين مساحة الاسم الحالية
+   <namespace>  مساحة الاسم المحددة
 
 nvs_list  <partition> [-n <namespace>] [-t <type>]
-  List stored key-value pairs stored in NVS.Namespace and type can be specified
-  to print only those key-value pairs.
+  قائمة بأزواج المفتاح-القيمة المخزنة في NVS. يمكن تحديد مساحة الاسم والنوع لطباعة أزواج المفتاح-القيمة هذه فقط.
   
-Following command list variables stored inside 'nvs' partition, under namespace 'storage' with type uint32_t
-  Example: nvs_list nvs -n storage -t u32 
+الأمر التالي يعرض المتغيرات المخزنة داخل قسم 'nvs'، تحت مساحة الاسم 'storage' مع النوع uint32_t
+  مثال: nvs_list nvs -n storage -t u32 
 
-   <partition>  partition name
-  -n, --namespace=<namespace>  namespace name
-  -t, --type=<type>  type can be: i8, u8, i16, u16 i32, u32 i64, u64, str, blob
+   <partition>  اسم القسم
+  -n, --namespace=<namespace>  اسم مساحة الاسم
+  -t, --type=<type>  النوع يمكن أن يكون: i8, u8, i16, u16 i32, u32 i64, u64, str, blob
 
 nvs_erase_namespace  <namespace>
-  Erases specified namespace
-   <namespace>  namespace to be erased
+  مسح مساحة الاسم المحددة
+   <namespace>  مساحة الاسم المراد مسحها
 
 set_sta  <ssid> <passwd>
-  Set SSID and password of the STA interface
+  تعيين SSID وكلمة المرور لواجهة STA
         <ssid>  SSID
-      <passwd>  Password
-  --, -u, ----username=<ent_username>  Enterprise username
-  --, -a, ----anan=<ent_identity>  Enterprise identity
+      <passwd>  كلمة المرور
+  --, -u, ----username=<ent_username>  اسم مستخدم المؤسسة
+  --, -a, ----anan=<ent_identity>  هوية المؤسسة
 
 set_sta_static  <ip> <subnet> <gw>
-  Set Static IP for the STA interface
+  تعيين IP ثابت لواجهة STA
           <ip>  IP
-      <subnet>  Subnet Mask
-          <gw>  Gateway Address
+      <subnet>  قناع الشبكة الفرعية
+          <gw>  عنوان البوابة
 
 set_ap  <ssid> <passwd>
-  Set SSID and password of the SoftAP
-        <ssid>  SSID of AP
-      <passwd>  Password of AP
+  تعيين SSID وكلمة المرور لـ SoftAP
+        <ssid>  SSID لـ AP
+      <passwd>  كلمة المرور لـ AP
 
 set_ap_ip  <ip>
-  Set IP for the AP interface
+  تعيين IP لواجهة AP
           <ip>  IP
 
 portmap  [add|del] [TCP|UDP] <ext_portno> <int_ip> <int_portno>
-  Add or delete a portmapping to the router
-     [add|del]  add or delete portmapping
-     [TCP|UDP]  TCP or UDP port
-  <ext_portno>  external port number
-      <int_ip>  internal IP
-  <int_portno>  internal port number
+  إضافة أو حذف تعيين منفذ إلى الموجه
+     [add|del]  إضافة أو حذف تعيين المنفذ
+     [TCP|UDP]  منفذ TCP أو UDP
+  <ext_portno>  رقم المنفذ الخارجي
+      <int_ip>  IP الداخلي
+  <int_portno>  رقم المنفذ الداخلي
 
 show 
-  Get status and config of the router
+  الحصول على حالة وتكوين الموجه
 ```
 
-If you want to enter non-ASCII or special characters (incl. ' ') you can use HTTP-style hex encoding (e.g. "My%20AccessPoint" results in a string "My AccessPoint").
+إذا كنت تريد إدخال أحرف غير ASCII أو خاصة (بما في ذلك ' ')، يمكنك استخدام ترميز HTTP السداسي (على سبيل المثال، "My%20AccessPoint" يؤدي إلى إنشاء سلسلة "My AccessPoint").
 
-## Set console output to UART or USB_SERIAL_JTAG (USB-OTG)
-All newer ESP32 boards have a built in [USB Serial/JTAG Controller](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/api-guides/usb-serial-jtag-console.html). 
-If the USB port is connected directly to the USB Serial/JTAG Controller, you wont be able to use the console over UART.
+## تعيين إخراج الكونسول إلى UART أو USB_SERIAL_JTAG (USB-OTG)
+جميع لوحات ESP32 الأحدث تحتوي على [وحدة تحكم USB Serial/JTAG](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/api-guides/usb-serial-jtag-console.html). 
+إذا كان منفذ USB متصلاً مباشرة بوحدة تحكم USB Serial/JTAG، فلن تتمكن من استخدام الكونسول عبر UART.
 
-You can change the console output to USB_SERIAL_JTAG:
+يمكنك تغيير إخراج الكونسول إلى USB_SERIAL_JTAG:
 
 **Menuconfig:**
 `Component config` -> `ESP System Settings` -> `Channel for console output` -> `USB Serial/JTAG Controller`
 
-**Changing sdkconfig directly**
+**تغيير sdkconfig مباشرة**
 ```
 CONFIG_ESP_CONSOLE_UART_DEFAULT=n
 CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y
 ```
 
-[Board comparison list](https://docs.espressif.com/projects/esp-idf/en/v5.0.4/esp32/hw-reference/chip-series-comparison.html)
+[قائمة مقارنة اللوحات](https://docs.espressif.com/projects/esp-idf/en/v5.0.4/esp32/hw-reference/chip-series-comparison.html)
 
-## Flashing the prebuild Binaries
+## تثبيت الثنائيات المسبقة البناء
 
-Get and install [esptool](https://github.com/espressif/esptool):
+احصل وثبّت [esptool](https://github.com/espressif/esptool):
 
 ```
 cd ~
@@ -224,9 +218,9 @@ cd esptool
 python3 setup.py install
 ```
 
-Go to esp32_nat_router project directory and build for any kind of esp32 target.
+انتقل إلى دليل مشروع esp32_nat_router وقم بالبناء لأي نوع من أهداف esp32.
 
-For esp32:
+لـ esp32:
 
 ```bash
 esptool.py --chip esp32 \
@@ -237,7 +231,7 @@ esptool.py --chip esp32 \
 0x10000 build/esp32/firmware.bin
 ```
 
-For esp32c3:
+لـ esp32c3:
 
 ```bash
 esptool.py --chip esp32c3 \
@@ -248,42 +242,42 @@ esptool.py --chip esp32c3 \
 0x10000 build/esp32c3/firmware.bin
 ```
 
-As an alternative you might use [Espressif's Flash Download Tools](https://www.espressif.com/en/products/hardware/esp32/resources) with the parameters given in the figure below (thanks to mahesh2000), update the filenames accordingly:
+كبديل، يمكنك استخدام [أدوات تنزيل Flash من Espressif](https://www.espressif.com/en/products/hardware/esp32/resources) مع المعلمات الموضحة في الشكل أدناه (بفضل mahesh2000)، قم بتحديث أسماء الملفات وفقًا لذلك:
 
 ![image](https://raw.githubusercontent.com/martin-ger/esp32_nat_router/master/FlasherUI.jpg)
 
-Note that the prebuilt binaries do not include WPA2 Enterprise support.
+لاحظ أن الثنائيات المسبقة البناء لا تتضمن دعم WPA2 Enterprise.
 
-## Building the Binaries (Method 1 - ESPIDF)
-The following are the steps required to compile this project:
+## بناء الثنائيات (الطريقة 1 - ESPIDF)
+فيما يلي الخطوات المطلوبة لتجميع هذا المشروع:
 
-1. Download and setup the ESP-IDF.
+1. قم بتنزيل وإعداد ESP-IDF.
 
-2. In the project directory run `make menuconfig` (or `idf.py menuconfig` for cmake).
+2. في دليل المشروع، قم بتشغيل `make menuconfig` (أو `idf.py menuconfig` لـ cmake).
     1. *Component config -> LWIP > [x] Enable copy between Layer2 and Layer3 packets.
     2. *Component config -> LWIP > [x] Enable IP forwarding.
     3. *Component config -> LWIP > [x] Enable NAT (new/experimental).
-3. Build the project and flash it to the ESP32.
+3. قم ببناء المشروع وقم بتثبيته على ESP32.
 
-A detailed instruction on how to build, configure and flash a ESP-IDF project can also be found the official ESP-IDF guide. 
+يمكن العثور على تعليمات مفصلة حول كيفية بناء وتكوين وتثبيت مشروع ESP-IDF في الدليل الرسمي لـ ESP-IDF.
 
-## Building the Binaries (Method 2 - Platformio)
-The following are the steps required to compile this project:
+## بناء الثنائيات (الطريقة 2 - Platformio)
+فيما يلي الخطوات المطلوبة لتجميع هذا المشروع:
 
-1. Download Visual Studio Code, and the Platform IO extension.
-2. In Platformio, install the ESP-IDF framework.
-3. Build the project and flash it to the ESP32.
+1. قم بتنزيل Visual Studio Code، وملحق Platform IO.
+2. في Platformio، قم بتثبيت إطار عمل ESP-IDF.
+3. قم ببناء المشروع وقم بتثبيته على ESP32.
 
 ### DNS
-As soon as the ESP32 STA has learned a DNS IP from its upstream DNS server on first connect, it passes that to newly connected clients.
-Before that by default the DNS-Server which is offerd to clients connecting to the ESP32 AP is set to 8.8.8.8.
-Replace the value of the *MY_DNS_IP_ADDR* with your desired DNS-Server IP address (in hex) if you want to use a different one.
+بمجرد أن يتعلم ESP32 STA عنوان IP لخادم DNS من خادم DNS uplink الخاص به عند الاتصال الأول، فإنه يمرر ذلك إلى العملاء المتصلين حديثًا.
+قبل ذلك، بشكل افتراضي، يتم تعيين خادم DNS الذي يتم تقديمه للعملاء المتصلين بـ ESP32 AP إلى 8.8.8.8.
+استبدل قيمة *MY_DNS_IP_ADDR* بعنوان IP لخادم DNS المطلوب (بالهيكس) إذا كنت تريد استخدام خادم DNS مختلف.
 
-## Troubleshooting
+## استكشاف الأخطاء وإصلاحها
 
-### Line Endings
+### نهايات الأسطر
 
-The line endings in the Console Example are configured to match particular serial monitors. Therefore, if the following log output appears, consider using a different serial monitor (e.g. Putty for Windows or GtkTerm on Linux) or modify the example's UART configuration.
+تم تكوين نهايات الأسطر في مثال الكونسول لتتناسب مع شاشات تسلسلية معينة. لذلك، إذا ظهرت سجل الإخراج التالي، ففكر في استخدام شاشة تسلسلية مختلفة (على سبيل المثال، Putty لنظام Windows أو GtkTerm على Linux) أو قم بتعديل تكوين UART في المثال.
 
 ```
 This is an example of ESP-IDF console component.
